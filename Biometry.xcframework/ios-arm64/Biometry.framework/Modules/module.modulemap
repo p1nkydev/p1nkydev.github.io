@@ -1,0 +1,8 @@
+framework module "Biometry" {
+    umbrella header "Biometry.h"
+
+    export *
+    module * { export * }
+
+    use Foundation
+}
