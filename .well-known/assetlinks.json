@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "ua.companyname.porada.android",
+    "sha256_cert_fingerprints":
+    ["2C:37:53:30:B4:8A:B6:AD:56:AF:3B:FD:26:55:7C:76:9C:AF:1B:80:FE:26:89:9E:B4:B8:ED:B6:B2:26:FF:57"]
+  }
+}]
