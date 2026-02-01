@@ -31,17 +31,39 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .manual-link {
+            margin-top: 20px;
+            display: none;
+        }
+        .manual-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            display: inline-block;
+        }
     </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner" id="spinner"></div>
+        <p id="message">Redirecting...</p>
+        <div class="manual-link" id="manualLink">
+            <p>Automatic redirect failed.</p>
+            <a href="#" id="storeButton">Open App Store</a>
+        </div>
+    </div>
+    
     <script>
         function getMobileOS() {
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
             
-            // iOS detection
             if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
                 return "iOS";
             }
             
-            // Android detection
             if (/android/i.test(userAgent)) {
                 return "Android";
             }
@@ -52,13 +74,19 @@
         function redirect() {
             const urlParams = new URLSearchParams(window.location.search);
             const contentId = urlParams.get('id') || '';
-            const os = getMobileOS();
             
+            if (!contentId) {
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('message').textContent = 'Welcome! Please use a valid share link.';
+                return;
+            }
+            
+            const os = getMobileOS();
             let appDeepLink = '';
             let storeLink = '';
+            let hasRedirected = false; // Prevent multiple redirects
             
             if (os === "Android") {
-                // Android deep link (using both custom scheme and https)
                 appDeepLink = `https://p1nkydev.github.io/share?id=${contentId}`;
                 storeLink = 'https://play.google.com/store/apps/details?id=ua.companyname.porada.android';
                 
@@ -68,41 +96,82 @@
                 storeLink = 'https://apps.apple.com/app/com.companyname.porada';
                 
             } else {
-                // Desktop or unknown - show message or redirect to website
-                document.body.innerHTML = '<div class="container"><p>Please open this link on your mobile device</p></div>';
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('message').textContent = 'Please open this link on your mobile device';
                 return;
             }
             
-            // Attempt to open the app
-            window.location.href = appDeepLink;
-            
-            // Fallback to store if app didn't open
+            // Try to open the app
+            const startTime = Date.now();
             let appOpened = false;
             
-            const handleVisibilityChange = () => {
-                if (document.hidden) {
+            // Method 1: Try opening via iframe (works better on some devices)
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = appDeepLink;
+            document.body.appendChild(iframe);
+            
+            // Method 2: Also try direct location change as backup
+            setTimeout(() => {
+                if (!appOpened && !hasRedirected) {
+                    window.location.href = appDeepLink;
+                }
+            }, 500);
+            
+            // Detect if app opened by checking if page is still visible
+            const checkAppOpened = () => {
+                const elapsed = Date.now() - startTime;
+                
+                // If page has been hidden (app opened), don't redirect to store
+                if (document.hidden || document.webkitHidden) {
                     appOpened = true;
+                    return;
+                }
+                
+                // After 2.5 seconds, if app didn't open, go to store
+                if (elapsed > 2500 && !appOpened && !hasRedirected) {
+                    hasRedirected = true;
+                    
+                    // Remove iframe
+                    if (iframe.parentNode) {
+                        iframe.parentNode.removeChild(iframe);
+                    }
+                    
+                    // Try automatic redirect to store
+                    window.location.href = storeLink;
+                    
+                    // Show manual button as fallback after 1 second
+                    setTimeout(() => {
+                        document.getElementById('spinner').style.display = 'none';
+                        document.getElementById('message').textContent = 'Opening store...';
+                        document.getElementById('manualLink').style.display = 'block';
+                        document.getElementById('storeButton').href = storeLink;
+                    }, 1000);
                 }
             };
             
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-            
-            // Redirect to store after delay if app didn't open
-            setTimeout(() => {
-                document.removeEventListener('visibilitychange', handleVisibilityChange);
-                if (!appOpened) {
-                    window.location.href = storeLink;
+            // Check visibility changes
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    appOpened = true;
                 }
-            }, 2000);
+            });
+            
+            // Check periodically
+            const checkInterval = setInterval(() => {
+                checkAppOpened();
+                if (hasRedirected || appOpened) {
+                    clearInterval(checkInterval);
+                }
+            }, 100);
+            
+            // Cleanup after 5 seconds
+            setTimeout(() => {
+                clearInterval(checkInterval);
+            }, 5000);
         }
         
         window.onload = redirect;
     </script>
-</head>
-<body>
-    <div class="container">
-        <div class="spinner"></div>
-        <p>Redirecting...</p>
-    </div>
 </body>
 </html>
