@@ -1,9 +1,26 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "ua.companyname.porada.android",
-    "sha256_cert_fingerprints":
-    ["2C:37:53:30:B4:8A:B6:AD:56:AF:3B:FD:26:55:7C:76:9C:AF:1B:80:FE:26:89:9E:B4:B8:ED:B6:B2:26:FF:57"]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ua.companyname.porada.android",
+      "sha256_cert_fingerprints": [
+        "8C:84:A1:0D:3F:E2:E1:D4:97:E3:92:0F:A4:45:CB:1F:C5:16:2D:B8:5D:9A:71:8D:2E:0C:BD:C3:32:55:08:F6"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ua.companyname.porada.android.debug",
+      "sha256_cert_fingerprints": [
+        "BA:56:B2:62:80:EF:42:FD:EA:EF:26:82:55:1D:4E:3A:EF:C7:CF:18:1C:95:7F:3C:7B:2C:85:5F:A2:13:85:2A"
+      ]
+    }
   }
-}]
+]
