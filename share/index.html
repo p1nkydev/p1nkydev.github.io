@@ -76,6 +76,11 @@
             const contentId = urlParams.get('id') || '';
             
             const closePage = () => {
+                if (!window.opener) {
+                    return;
+                }
+                
+                // Delay gives the redirect a moment to start before closing the tab/window.
                 setTimeout(() => {
                     window.close();
                 }, 250);
