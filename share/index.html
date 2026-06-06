@@ -76,13 +76,19 @@
             const contentId = urlParams.get('id') || '';
             
             const closePage = () => {
-                if (!window.opener) {
-                    return;
-                }
-                
                 // Delay gives the redirect a moment to start before closing the tab/window.
                 setTimeout(() => {
-                    window.close();
+                    try {
+                        window.close();
+                    } catch (error) {
+                        // Ignore close failures and fall back to a visible message below.
+                    }
+                    
+                    setTimeout(() => {
+                        if (!window.closed) {
+                            document.getElementById('message').textContent = 'Redirect complete. You can close this tab.';
+                        }
+                    }, 250);
                 }, 250);
             };
             
