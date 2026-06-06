@@ -77,6 +77,8 @@
             const CLOSE_DELAY_MS = 250;
             const FALLBACK_DELAY_MS = 1500;
             let closePageRequested = false;
+            let closeTimerId = null;
+            let fallbackTimerId = null;
             
             const closePage = () => {
                 if (closePageRequested) {
@@ -86,7 +88,7 @@
                 closePageRequested = true;
                 
                 // Delay gives the redirect a moment to start before closing the tab/window.
-                setTimeout(() => {
+                closeTimerId = setTimeout(() => {
                     try {
                         window.close();
                     } catch (error) {
@@ -95,7 +97,7 @@
                     }
                 }, CLOSE_DELAY_MS);
 
-                setTimeout(() => {
+                fallbackTimerId = setTimeout(() => {
                     if (document.visibilityState === 'visible') {
                         const message = document.getElementById('message');
                         if (message) {
