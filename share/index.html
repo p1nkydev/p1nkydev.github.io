@@ -74,6 +74,41 @@
         function redirect() {
             const urlParams = new URLSearchParams(window.location.search);
             const contentId = urlParams.get('id') || '';
+            const CLOSE_DELAY_MS = 250;
+            const FALLBACK_DELAY_MS = 1500;
+            let closePageRequested = false;
+            let closeTimerId = null;
+            let fallbackTimerId = null;
+            
+            const closePage = () => {
+                if (closePageRequested) {
+                    return;
+                }
+                
+                closePageRequested = true;
+                if (closeTimerId) {
+                    clearTimeout(closeTimerId);
+                    closeTimerId = null;
+                }
+                if (fallbackTimerId) {
+                    clearTimeout(fallbackTimerId);
+                    fallbackTimerId = null;
+                }
+                
+                // Delay gives the redirect a moment to start before closing the tab/window.
+                closeTimerId = setTimeout(() => {
+                    window.close();
+                }, CLOSE_DELAY_MS);
+
+                fallbackTimerId = setTimeout(() => {
+                    if (document.visibilityState === 'visible') {
+                        const message = document.getElementById('message');
+                        if (message) {
+                            message.textContent = 'Redirect complete. You can close this tab.';
+                        }
+                    }
+                }, FALLBACK_DELAY_MS);
+            };
             
             if (!contentId) {
                 document.getElementById('spinner').style.display = 'none';
@@ -139,6 +174,7 @@
                     
                     // Try automatic redirect to store
                     window.location.href = storeLink;
+                    closePage();
                     
                     // Show manual button as fallback after 1 second
                     setTimeout(() => {
@@ -154,6 +190,7 @@
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     appOpened = true;
+                    closePage();
                 }
             });
             
