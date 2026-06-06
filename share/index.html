@@ -75,6 +75,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const contentId = urlParams.get('id') || '';
             const CLOSE_DELAY_MS = 250;
+            const FALLBACK_DELAY_MS = 1500;
             
             const closePage = () => {
                 // Delay gives the redirect a moment to start before closing the tab/window.
@@ -89,7 +90,7 @@
                         if (document.visibilityState === 'visible') {
                             document.getElementById('message').textContent = 'Redirect complete. You can close this tab.';
                         }
-                    }, CLOSE_DELAY_MS);
+                    }, FALLBACK_DELAY_MS);
                 }, CLOSE_DELAY_MS);
             };
             
