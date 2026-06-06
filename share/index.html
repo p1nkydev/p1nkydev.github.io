@@ -85,13 +85,16 @@
                     } catch (error) {
                         // Ignore close failures and fall back to a visible message below.
                     }
-                    
-                    setTimeout(() => {
-                        if (document.visibilityState === 'visible') {
-                            document.getElementById('message').textContent = 'Redirect complete. You can close this tab.';
-                        }
-                    }, FALLBACK_DELAY_MS);
                 }, CLOSE_DELAY_MS);
+
+                setTimeout(() => {
+                    if (document.visibilityState === 'visible') {
+                        const message = document.getElementById('message');
+                        if (message) {
+                            message.textContent = 'Redirect complete. You can close this tab.';
+                        }
+                    }
+                }, FALLBACK_DELAY_MS);
             };
             
             if (!contentId) {
