@@ -86,13 +86,19 @@
                 }
                 
                 closePageRequested = true;
+                if (closeTimerId) {
+                    clearTimeout(closeTimerId);
+                }
+                if (fallbackTimerId) {
+                    clearTimeout(fallbackTimerId);
+                }
                 
                 // Delay gives the redirect a moment to start before closing the tab/window.
                 closeTimerId = setTimeout(() => {
                     try {
                         window.close();
                     } catch (error) {
-                        // Ignore close failures and fall back to a visible message below.
+                        // Ignore close failures; the fallback message is shown by a separate timer below.
                         console.error('Failed to close share page after redirect', error);
                     }
                 }, CLOSE_DELAY_MS);
