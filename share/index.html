@@ -85,9 +85,7 @@
                     }
                     
                     setTimeout(() => {
-                        if (!window.closed) {
-                            document.getElementById('message').textContent = 'Redirect complete. You can close this tab.';
-                        }
+                        document.getElementById('message').textContent = 'Redirect complete. You can close this tab.';
                     }, 250);
                 }, 250);
             };
