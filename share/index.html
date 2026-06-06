@@ -75,6 +75,12 @@
             const urlParams = new URLSearchParams(window.location.search);
             const contentId = urlParams.get('id') || '';
             
+            const closePage = () => {
+                setTimeout(() => {
+                    window.close();
+                }, 250);
+            };
+            
             if (!contentId) {
                 document.getElementById('spinner').style.display = 'none';
                 document.getElementById('message').textContent = 'Welcome! Please use a valid share link.';
@@ -139,6 +145,7 @@
                     
                     // Try automatic redirect to store
                     window.location.href = storeLink;
+                    closePage();
                     
                     // Show manual button as fallback after 1 second
                     setTimeout(() => {
@@ -154,6 +161,7 @@
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     appOpened = true;
+                    closePage();
                 }
             });
             
