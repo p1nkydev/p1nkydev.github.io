@@ -77,36 +77,46 @@
             const os = getMobileOS();
 
             if (os === "Android") {
-                const appPackage   = 'ua.companyname.porada.android';
-                const storeLink    = 'https://play.google.com/store/apps/details?id=' + appPackage;
-                const webFallback  = 'https://p1nkydev.github.io/share?id=' + contentId;
+                const appPackage  = 'ua.companyname.porada.android';
+                const storeLink   = 'https://play.google.com/store/apps/details?id=' + appPackage;
 
-                // intent:// URI tells Chrome / Chrome Custom Tabs to hand off to the app.
-                // S.browser_fallback_url is used when the app is NOT installed — Chrome
-                // opens that URL instead of the store, so point it at the Play Store link.
-                // The #Intent...END block closes the Custom Tab and launches the app in one step.
+                // NO S.browser_fallback_url — that parameter fires unconditionally
+                // (Chrome doesn't wait to see if the app actually launched).
+                // We handle the "not installed" fallback ourselves with a timer below.
                 const intentUri =
                     `intent://share?id=${contentId}` +
                     `#Intent` +
                     `;scheme=https` +
                     `;package=${appPackage}` +
-                    `;S.browser_fallback_url=${encodeURIComponent(storeLink)}` +
                     `;end`;
 
-                // Navigate to the intent URI immediately.
-                // Chrome Custom Tabs will close itself and open the app (or go to the store).
+                let appOpened = false;
+
+                // Chrome Custom Tabs fires pagehide when it closes itself to hand off
+                // to the app. visibilitychange (hidden) is a secondary signal.
+                const markOpened = () => { appOpened = true; };
+                window.addEventListener('pagehide', markOpened);
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) appOpened = true;
+                });
+
+                // Fire the intent
                 window.location.replace(intentUri);
 
-                // Safety net: if we're still here after 2.5 s the intent didn't fire
-                // (e.g. some browsers block intent:// — fall through to a direct store link).
+                // After 2.5 s: if the page is still visible, the app was not installed
+                // (Chrome silently swallowed the intent and returned here) — go to store.
                 setTimeout(() => {
-                    document.getElementById('spinner').style.display = 'none';
-                    document.getElementById('message').textContent = 'Opening store...';
-                    const ml = document.getElementById('manualLink');
-                    ml.style.display = 'block';
-                    document.getElementById('storeButton').href = storeLink;
-                    // Also attempt the HTTPS deep link as a last resort
-                    window.location.replace(storeLink);
+                    window.removeEventListener('pagehide', markOpened);
+                    if (!appOpened && !document.hidden) {
+                        window.location.replace(storeLink);
+                        setTimeout(() => {
+                            document.getElementById('spinner').style.display = 'none';
+                            document.getElementById('message').textContent = 'Opening store...';
+                            const ml = document.getElementById('manualLink');
+                            ml.style.display = 'block';
+                            document.getElementById('storeButton').href = storeLink;
+                        }, 1000);
+                    }
                 }, 2500);
 
             } else if (os === "iOS") {
